@@ -1,0 +1,106 @@
+
+
+var WIFI_NAME = "Fannet";
+var WIFI_KEY = "Autotransfusio1";
+var wifi;
+
+digitalWrite(D9, false);
+
+const RELAY3 = D0;
+const RELAY2 = D4;
+const RELAY1 = D5;
+
+// The last data that was POSTed to us
+var postData = {};
+
+// This serves up the webpage itself
+function sendPage(res) {
+  // We're using ES6 Template Literals here to make the HTML easy to read.
+  var d = `
+<html>
+ <body style="width: 300px">
+  <form action="#" method="post">
+    <label for="led1">LED1 (green):</label>
+    <input type="checkbox" id="led1" name="led1" value="1" ${postData.led1?"checked":""}><br/>
+    <label for="led2">LED2 (dontwalk):</label>
+    <input type="checkbox" id="led2" name="led2" value="1" ${postData.led2?"checked":""}><br/>
+    <label for="led3">LED3 (walk):</label>
+    <input type="checkbox" id="led3" name="led3" value="1" ${postData.led3?"checked":""}><br/>
+    <!--<label for="led4">LED4 (n/a):</label>
+    <input type="checkbox" id="led4" name="led4" value="1" ${postData.led4?"checked":""}><br/>-->
+    <button>Submit</button>
+  </form>
+ </body>
+</html>`;
+  res.writeHead(200, {'Content-Type': 'text/html', 'Content-Length':d.length});
+  res.end(d);
+}  
+
+// This handles the HTTP request itself and serves up the webpage or a
+// 404 not found page
+function onPageRequest(req, res) {
+  var a = url.parse(req.url, true);
+  if (a.pathname=="/") {
+    // handle the '/' (root) page...
+    // If we had a POST, handle the data we're being given
+    if (req.method=="POST" &&
+        req.headers["Content-Type"]=="application/x-www-form-urlencoded")
+      handlePOST(req, function() { sendPage(res); });
+    else
+      sendPage(res);
+  } else {
+    // Page not found - return 404
+    res.writeHead(404, {'Content-Type': 'text/plain'});
+    res.end("404: Page "+a.pathname+" not found");
+  }
+}
+
+// This handles any received data from the POST request
+function handlePOST(req, callback) {
+  var data = "";
+  req.on('data', function(d) { data += d; });
+  req.on('end', function() {
+    // All data received from the client, so handle the url encoded data we got
+    // If we used 'close' then the HTTP request would have been closed and we
+    // would be unable to send the result page.
+    postData = {};
+    data.split("&").forEach(function(el) {
+      var els = el.split("=");
+      postData[els[0]] = decodeURIComponent(els[1]);
+    });
+    // finally our data is in postData
+    console.log(postData);
+    // do stuff with it!
+    
+    digitalWrite(RELAY1, !postData.led1);
+    digitalWrite(RELAY2, !postData.led2);
+    digitalWrite(RELAY3, !postData.led3);
+    // call our callback (to send the HTML result)
+    callback();
+  });
+}
+
+
+// This is called when we have an internet connection
+function onConnected() {
+  console.log("Connected!");
+  wifi.getIP(function(err, ip) {
+    console.log("Connect to http://"+ip.ip);
+    require("http").createServer(onPageRequest).listen(80);
+  });
+}
+
+
+function onInit() {
+  wifi = require("Wifi");
+  wifi.connect(WIFI_NAME, { password : WIFI_KEY }, function(err) {
+    if (err) {
+      console.log("Connection error: "+err);
+      return;
+    }
+    onConnected();
+  });
+}
+
+// Comment this line out if you're planning on saving your code
+onInit();
