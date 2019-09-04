@@ -1,3 +1,5 @@
+// <link rel="shortcut icon" sizes="16x16 32x32" type="image/png" href="https://i.pinimg.com/originals/14/1d/a7/141da787999461d5937517d19710b9c6.jpg"/>
+
 // Ezt akkor kell lefuttatni, ha betelt a cucc
 reset(true);
 
