@@ -45,7 +45,7 @@ function sendPage(res) {
     <!-- Font -->
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap&subset=latin-ext" rel="stylesheet">
     <!-- CSS -->
-    <link href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap&subset=latin-ext" rel="stylesheet">
+    <link href="https://adamvari.github.io/lampa.css?v=0.01" rel="stylesheet">
     <!-- Favicon -->
     <link rel="shortcut icon" sizes="16x16 32x32" type="image/png" href="https://i.pinimg.com/originals/14/1d/a7/141da787999461d5937517d19710b9c6.jpg"/>
 
